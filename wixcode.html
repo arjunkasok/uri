@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
+</head>
+<body>
+  <script>
+class Eye {
+  constructor(p, x, y, rotation, isLeft) {
+    this.p = p;
+    this.x = x;
+    this.y = y;
+    this.rotation = rotation;
+    this.isLeft = isLeft;
+    this.eye = p.createGraphics(148, 80);
+    this.pupil = p.createGraphics(148, 80);
+    this.lastMouseTime = 0;
+    this.pupilX = 73;
+    this.pupilY = 40;
+    this.transitionStartTime = 0;
+    this.transitionDuration = 500;
+
+    this.drawEyeShape(this.eye);
+  }
+
+  drawEyeShape(g) {
+    if (this.isLeft) {
+      g.fill(235, 45, 174);
+    } else {
+      g.fill(255, 160, 0); // Change the right eye color to #FFA000
+    }
+    g.strokeWeight(0);
+    g.beginShape();
+    this.createEyeContour(g);
+    g.endShape(this.p.CLOSE);
+  }
+
+  createEyeContour(g) {
+    g.vertex(3, 50);
+    g.bezierVertex(3, 50, 26, 2, 73, 2);
+    g.bezierVertex(100, 2, 129, 17, 145, 41);
+    g.bezierVertex(145, 41, 113, 77, 71, 77);
+    g.bezierVertex(30, 77, 3, 50, 3, 50);
+  }
+
+  drawPupil(g, x, y) {
+    g.clear();
+    g.stroke(255);
+    g.strokeWeight(11);
+    g.fill(29, 29, 27);
+    g.ellipse(x, y, 50, 50);
+  }
+
+  update() {
+  let now = this.p.millis();
+  let elapsedTime = now - this.transitionStartTime;
+
+  if (now - this.lastMouseTime > 1000) {
+    let center = this.p.createVector(this.eye.width / 2, 40);
+    let current = this.p.createVector(this.pupilX, this.pupilY);
+    let target = center;
+
+    if (elapsedTime < this.transitionDuration) {
+      let t = elapsedTime / this.transitionDuration;
+      this.pupilX = this.p.lerp(current.x, target.x, t);
+      this.pupilY = this.p.lerp(current.y, target.y, t);
+    } else {
+      this.pupilX = target.x;
+      this.pupilY = target.y;
+    }
+  } else {
+    let centerX = this.eye.width / 2;
+    let centerY = 40;
+    let mousePos = this.p.createVector(this.p.mouseX - this.x, this.p.mouseY - this.y); // Revert to the original line
+    mousePos.rotate(-this.p.radians(this.rotation));
+    this.pupilX = this.p.map(mousePos.x, -centerX, centerX, 46, 96, true);
+    this.pupilY = this.p.map(mousePos.y, -centerY, centerY, 15, 64, true);
+    this.transitionStartTime = now;
+  }
+
+  this.drawPupil(this.pupil, this.pupilX, this.pupilY);
+}
+
+
+  display() {
+    this.p.push();
+    this.p.translate(this.x + this.eye.width / 2, this.y + this.eye.height / 2);
+    if (this.rotation) {
+      this.p.rotate(this.p.radians(this.rotation));
+    }
+        this.p.translate(-this.eye.width / 2, -this.eye.height / 2);
+    this.p.image(this.eye, 0, 0);
+    this.p.blendMode(this.p.NORMAL);
+    this.p.image(this.pupil, 0, 0);
+    this.p.blendMode(this.p.NORMAL);
+    this.p.pop();
+  }
+
+  mouseMoved() {
+    this.lastMouseTime = this.p.millis();
+  }
+}
+
+const sketch = (p) => {
+  let leftEye, rightEye;
+  let fgImage;
+
+  p.preload = () => {
+    fgImage = p.loadImage('https://raw.githubusercontent.com/arjunkasok/uri/5f015f68a545168f41814ebc93b1ed303328c04d/logo.png');
+  };
+
+  p.setup = () => {
+  p.createCanvas(400, 400);
+
+  leftEye = new Eye(p, p.width / 2 - 20 - 63, p.height / 2 - 30 - 5 + 42, 0, true); // Add 60 to the y-coordinate of the left eye
+  rightEye = new Eye(p, p.width / 2 + 39, p.height / 2 + 33, 49, false);
+};
+
+  p.draw = () => {
+    p.background(255);
+
+    leftEye.update();
+    leftEye.display();
+
+    rightEye.update();
+    rightEye.display();
+
+    p.imageMode(p.CENTER);
+    p.image(fgImage, p.width / 2, p.height / 2);
+  };
+
+  p.mouseMoved = () => {
+    leftEye.mouseMoved();
+    rightEye.mouseMoved();
+  };
+};
+
+new p5(sketch);
+
+
+  </script>
+</body>
+</html>
