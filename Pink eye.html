@@ -11,10 +11,10 @@ let lastMoveTime;
 class Eye {
   constructor(p, x, y) {
     this.p = p;
-    this.x = x;
+    this.x = x + 200; // 200px added for the blank space on the left
     this.y = y;
-    this.eye = p.createGraphics(Math.floor(296 * 1.05), 160); // 5% increased width
-    this.pupil = p.createGraphics(Math.floor(296 * 1.05), 160); // 5% increased width
+    this.eye = p.createGraphics(Math.floor(296 * 1.05), 160);
+    this.pupil = p.createGraphics(Math.floor(296 * 1.05), 160);
     this.pupilX = Math.floor(148 * 1.05);
     this.pupilY = 80;
     this.targetPupilX = this.pupilX;
@@ -45,12 +45,11 @@ class Eye {
     this.targetPupilY = this.p.map(dy, -160, 160, 0, 160);
 
     if (currentTime - lastMoveTime > 1000) {
-      // Bring the pupil back to the center
       this.pupilX = this.p.lerp(this.pupilX, Math.floor(148 * 1.05), 0.1);
       this.pupilY = this.p.lerp(this.pupilY, 80, 0.1);
     } else {
-      this.pupilX = this.targetPupilX;
-      this.pupilY = this.targetPupilY;
+      this.pupilX = this.p.constrain(this.targetPupilX, 48, Math.floor(248 * 1.05));
+      this.pupilY = this.p.constrain(this.targetPupilY, 0, 160);
     }
 
     this.drawPupil(this.pupil, this.pupilX, this.pupilY);
@@ -76,11 +75,11 @@ const sketch = (p) => {
   let eye;
   
   p.preload = () => {
-    eyeOverlay = p.loadImage('https://raw.githubusercontent.com/arjunkasok/uri/main/Eye%20Cut%20out%202.png');
+    eyeOverlay = p.loadImage('https://raw.githubusercontent.com/arjunkasok/uri/main/Eye%20Cut%20out%204.png');
   };
 
   p.setup = () => {
-    p.createCanvas(800, 400);
+    p.createCanvas(1000, 400); // Increased canvas width to 1000px
     eye = new Eye(p, p.width / 2 - Math.floor(148 * 1.05), p.height / 2 - 80);
     lastMoveTime = p.millis();
   };
